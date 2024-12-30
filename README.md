@@ -1,4 +1,4 @@
-# Odysseus
+# Athena
 This system handles all inbound and outbound activities inside our SBC (raspberry pi or orange pi).
 
 ### OpenCV
