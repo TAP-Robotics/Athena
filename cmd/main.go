@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"oddysseus/internal/frames"
 	"time"
 
 	"gocv.io/x/gocv"
@@ -10,10 +11,9 @@ import (
 func main() {
 	fmt.Println("Hello World")
 
-	cam, _ := gocv.OpenVideoCapture(0)
-	window := gocv.NewWindow("I love Golang")
-	frame := gocv.NewMat()
+	frame_handler := frames.InitializeFrameHandler()
 
+	window := gocv.NewWindow("I love Golang")
 	start := time.Now()
 
 	for {
@@ -21,9 +21,8 @@ func main() {
 		elapsed := timer.Sub(start)
 		fmt.Println(elapsed.Milliseconds())
 		if elapsed.Milliseconds() >= 100 {
-			cam.Read(&frame)
-			fmt.Println(frame.Size())
-			window.IMShow(frame)
+			frame_handler.GetInstantFrame()
+			window.IMShow(*frame_handler.Frame)
 			start = time.Now()
 		}
 		window.WaitKey(1)
