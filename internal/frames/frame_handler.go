@@ -27,3 +27,18 @@ func InitializeFrameHandler() *FrameHandler {
 func (handler *FrameHandler) GetInstantFrame() {
 	handler.opencvInstance.Read(handler.Frame)
 }
+
+func (handler *FrameHandler) encodeToJPEG() *gocv.NativeByteBuffer {
+	encodedFile, err := gocv.IMEncode(gocv.JPEGFileExt, *handler.Frame)
+	if err != nil {
+		fmt.Println("Unable to encode frame to jpeg")
+	}
+
+	return encodedFile
+}
+
+func (handler *FrameHandler) GetJPEGString() []byte {
+	encodedFile := handler.encodeToJPEG()
+	bytesEnc := encodedFile.GetBytes()
+	return bytesEnc
+}
