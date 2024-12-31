@@ -2,63 +2,34 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"oddysseus/internal/frames"
-	"time"
 
-	"github.com/coder/websocket"
-	"github.com/coder/websocket/wsjson"
-	"gocv.io/x/gocv"
+	"github.com/go-zeromq/zmq4"
+	"github.com/rs/zerolog/log"
 )
 
-type SendTempalte struct {
-	Message string      `json:"message"`
-	Content interface{} `json:"content"`
-}
-
 func main() {
-	fmt.Println("Hello World")
+	log.Print("TAP SBC System")
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-
-	connection, _, err := websocket.Dial(ctx, "ws://localhost:7207", nil)
-	if err != nil {
-		fmt.Println("Can't establish websocket connection, exiting...")
+	if err := zqmClient(context.Background()); err != nil {
 		panic(err)
 	}
-	defer connection.CloseNow()
+}
 
-	frame_handler := frames.InitializeFrameHandler()
+func zqmClient(ctx context.Context) error {
+	socket := zmq4.NewDealer(ctx, zmq4.WithAutomaticReconnect(true))
+	defer socket.Close()
 
-	window := gocv.NewWindow("I love Golang")
-	start := time.Now()
+	webcamHandler := frames.InitializeFrameHandler()
 
-	for {
-		timer := time.Now()
-		elapsed := timer.Sub(start)
-		if elapsed.Milliseconds() >= 140 {
-			frame_handler.GetInstantFrame()
-			stringedBytes := frame_handler.GetJPEGString()
+	liveVisionHandler := frames.NewVisionHandler(webcamHandler, socket)
 
-			toSend := &SendTempalte{
-				Message: "infer",
-				Content: &stringedBytes,
-			}
-			marshaled, err := json.Marshal(toSend)
-			if err != nil {
-				fmt.Println("Failed to marshal frame toSend data.")
-			}
-
-			err = wsjson.Write(ctx, connection, string(marshaled))
-			if err != nil {
-				fmt.Println("bruh error")
-			}
-
-			window.IMShow(*frame_handler.Frame)
-			start = time.Now()
-		}
-		window.WaitKey(1)
+	log.Info().Msg("Connecting to Zeus at tcp://localhost:7207i")
+	if err := socket.Dial("tcp://localhost:7207"); err != nil {
+		log.Panic().Msg("Cannot find Zeus")
 	}
+
+	liveVisionHandler.HandleDealer()
+
+	return nil
 }
