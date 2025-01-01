@@ -3,6 +3,7 @@ package frames
 import (
 	"fmt"
 
+	"github.com/rs/zerolog/log"
 	"gocv.io/x/gocv"
 )
 
@@ -28,8 +29,9 @@ func (handler *FrameHandler) GetInstantFrame() {
 	handler.opencvInstance.Read(handler.Frame)
 }
 
-func (handler *FrameHandler) encodeToPNG() *gocv.NativeByteBuffer {
-	encodedFile, err := gocv.IMEncode(gocv.JPEGFileExt, *handler.Frame)
+func (handler *FrameHandler) encodeToImage() *gocv.NativeByteBuffer {
+	quality := []int{gocv.IMWriteWebpQuality, 10}
+	encodedFile, err := gocv.IMEncodeWithParams(".webp", *handler.Frame, quality)
 	if err != nil {
 		fmt.Println("Unable to encode frame to jpeg")
 	}
@@ -37,8 +39,14 @@ func (handler *FrameHandler) encodeToPNG() *gocv.NativeByteBuffer {
 	return encodedFile
 }
 
-func (handler *FrameHandler) GetPNGString() []byte {
-	encodedFile := handler.encodeToPNG()
+func (handler *FrameHandler) GetImageString() []byte {
+	encodedFile := handler.encodeToImage()
 	bytesEnc := encodedFile.GetBytes()
+
+	sInB := len(bytesEnc)
+	sInMb := float64(sInB) / (1024 * 1024)
+
+	log.Debug().Float64("size_in_mb", sInMb).Msg("Encoded sizm")
+
 	return bytesEnc
 }
