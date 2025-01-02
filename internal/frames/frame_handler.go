@@ -46,7 +46,7 @@ func (handler *FrameHandler) GetImageString() []byte {
 	sInB := len(bytesEnc)
 	sInMb := float64(sInB) / (1024 * 1024)
 
-	log.Debug().Float64("size_in_mb", sInMb).Msg("Encoded sizm")
+	log.Debug().Float64("size_in_mb", sInMb).Msg("Encoded size")
 
 	return bytesEnc
 }

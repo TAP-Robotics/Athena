@@ -31,9 +31,9 @@ func (lHand *LiveHandler) HandleDealer() {
 	for {
 		timer := time.Now()
 		elapsed := timer.Sub(start)        // get the difference between start and end (timer)
-		if elapsed.Milliseconds() >= 140 { // 140 ms is the average inference time of the server in this environment (around 7.14 F/S).
+		if elapsed.Milliseconds() >= 100 { // 140 ms is the average inference time of the server in this environment (around 7.14 F/S).
 			lHand.frameHandler.GetInstantFrame()
-			stringEncodedImageCapture := lHand.frameHandler.GetPNGString()
+			stringEncodedImageCapture := lHand.frameHandler.GetImageString()
 
 			toSend := &shared.SendTempalte{
 				Message: "vision_infer",
